@@ -17,6 +17,7 @@ void XYStateEstimator::init(void) {
  	state.x = 0;
   state.y = 0;
   state.yaw = 0;
+  YawOffset = 0;
 }
 
 void XYStateEstimator::updateState(imu_state_t * imu_state_p, gps_state_t * gps_state_p) {
@@ -33,6 +34,15 @@ void XYStateEstimator::updateState(imu_state_t * imu_state_p, gps_state_t * gps_
     // INSERT YAW, X and Y CALCULATION HERE
     //////////////////////////////////////////////////////////////////
 
+    float DeltaLatitudeRad = (gps_state_p->lat - origin_lat) * PI / 180;
+    float DeltaLongitudeRad = (gps_state_p->lon - origin_lon) * PI / 180;
+
+    const float Heading = imu_state_p->heading;
+
+    state.y = RADIUS_OF_EARTH_M * DeltaLatitudeRad;
+    state.x = RADIUS_OF_EARTH_M * DeltaLongitudeRad * cos(origin_lat);
+
+    state.yaw = -1 * (Heading - 90) + YawOffset;
   }
   else{
     gpsAcquired = 0;

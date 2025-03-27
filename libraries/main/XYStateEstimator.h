@@ -46,6 +46,9 @@ private:
 
   bool gpsAcquired;
 
+  // Offset added to the yaw calculation to adjust for abnormalities in the Earth’s magnetic field 
+  float YawOffset;
+
 };
 
 #endif
