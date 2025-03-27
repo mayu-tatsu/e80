@@ -37,6 +37,9 @@ void XYStateEstimator::updateState(imu_state_t * imu_state_p, gps_state_t * gps_
     float DeltaLatitudeRad = (gps_state_p->lat - origin_lat) * PI / 180;
     float DeltaLongitudeRad = (gps_state_p->lon - origin_lon) * PI / 180;
 
+    DeltaLatitudeRad = min(max(DeltaLatitudeRad, -1*PI), PI);
+    DeltaLongitudeRad = min(max(DeltaLatitudeRad, -1*PI), PI);
+
     const float Heading = imu_state_p->heading;
 
     state.y = RADIUS_OF_EARTH_M * DeltaLatitudeRad;
