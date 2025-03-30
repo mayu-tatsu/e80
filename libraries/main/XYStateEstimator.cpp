@@ -45,7 +45,7 @@ void XYStateEstimator::updateState(imu_state_t * imu_state_p, gps_state_t * gps_
     state.y = RADIUS_OF_EARTH_M * DeltaLatitudeRad;
     state.x = RADIUS_OF_EARTH_M * DeltaLongitudeRad * cos(origin_lat);
 
-    state.yaw = -1 * (Heading - 90) + YawOffset;
+    state.yaw = -1 * (Heading - PI/2) + YawOffset;
   }
   else{
     gpsAcquired = 0;
