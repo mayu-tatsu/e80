@@ -36,7 +36,7 @@ XYStateEstimator state_estimator;
 SurfaceControl surface_control;
 SensorGPS gps;
 Adafruit_GPS GPS(&UartSerial);
-ADCSampler adc;
+// ADCSampler adc;
 ErrorFlagSampler ef;
 ButtonSampler button_sampler;
 SensorIMU imu;
@@ -65,7 +65,7 @@ void setup() {
   logger.include(&state_estimator);
   logger.include(&surface_control);
   logger.include(&motor_driver);
-  logger.include(&adc);
+  // logger.include(&adc);
   logger.include(&ef);
   logger.include(&button_sampler);
   logger.init();
@@ -90,7 +90,7 @@ void setup() {
   printer.lastExecutionTime         = loopStartTime - LOOP_PERIOD + PRINTER_LOOP_OFFSET ;
   imu.lastExecutionTime             = loopStartTime - LOOP_PERIOD + IMU_LOOP_OFFSET;
   gps.lastExecutionTime             = loopStartTime - LOOP_PERIOD + GPS_LOOP_OFFSET;
-  adc.lastExecutionTime             = loopStartTime - LOOP_PERIOD + ADC_LOOP_OFFSET;
+  // adc.lastExecutionTime             = loopStartTime - LOOP_PERIOD + ADC_LOOP_OFFSET;
   ef.lastExecutionTime              = loopStartTime - LOOP_PERIOD + ERROR_FLAG_LOOP_OFFSET;
   button_sampler.lastExecutionTime  = loopStartTime - LOOP_PERIOD + BUTTON_LOOP_OFFSET;
   state_estimator.lastExecutionTime = loopStartTime - LOOP_PERIOD + XY_STATE_ESTIMATOR_LOOP_OFFSET;
@@ -121,16 +121,29 @@ void loop() {
     printer.printToSerial();  // To stop printing, just comment this line out
   }
 
+  if (currentTime - burst_adc.lastExecutionTime > BURST_LOOP_PERIOD)
+  {
+    burst_adc.lastExecutionTime = currentTime;
+    motordriver.drive(0,0,0);
+    delay(50);
+    burst_adc.sample();
+    
+    if (currentTime-surface_control.lastExecutionTime > LOOP_PERIOD ) 
+    {
+      motor_driver.drive(surface_control.uL,surface_control.uR,0);
+    }
+  }
+
   if ( currentTime-surface_control.lastExecutionTime > LOOP_PERIOD ) {
     surface_control.lastExecutionTime = currentTime;
     surface_control.navigate(&state_estimator.state, &gps.state, DELAY);
     motor_driver.drive(surface_control.uL,surface_control.uR,0);
   }
 
-  if ( currentTime-adc.lastExecutionTime > LOOP_PERIOD ) {
-    adc.lastExecutionTime = currentTime;
-    adc.updateSample(); 
-  }
+  // if ( currentTime-adc.lastExecutionTime > LOOP_PERIOD ) {
+  //   adc.lastExecutionTime = currentTime;
+  //   adc.updateSample(); 
+  // }
 
   if ( currentTime-ef.lastExecutionTime > LOOP_PERIOD ) {
     ef.lastExecutionTime = currentTime;
