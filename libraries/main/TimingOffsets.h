@@ -16,7 +16,7 @@
 #define SURFACE_CONTROL_LOOP_OFFSET 65
 #define LED_LOOP_OFFSET 70
 #define LOGGER_LOOP_OFFSET 75
-// Specfically for the burst sampler. Will sample every 0.05 seconds
-#define BURST_LOOP_PERIOD 50
+// Specfically for the burst sampler
+#define BURST_LOOP_PERIOD 1000
 
 #endif
