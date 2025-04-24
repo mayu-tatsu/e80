@@ -108,7 +108,7 @@ void loop() {
   
   if ( currentTime-printer.lastExecutionTime > LOOP_PERIOD ) {
     printer.lastExecutionTime = currentTime;
-    printer.printValue(0,adc.printSample());
+    //printer.printValue(0,adc.printSample());
     printer.printValue(1,ef.printStates());
     printer.printValue(2,logger.printState());
     printer.printValue(3,gps.printState());   
@@ -124,7 +124,7 @@ void loop() {
   if (currentTime - burst_adc.lastExecutionTime > BURST_LOOP_PERIOD)
   {
     burst_adc.lastExecutionTime = currentTime;
-    motordriver.drive(0,0,0);
+    motor_driver.drive(0,0,0);
     delay(50);
     burst_adc.sample();
     

@@ -17,6 +17,6 @@
 #define LED_LOOP_OFFSET 70
 #define LOGGER_LOOP_OFFSET 75
 // Specfically for the burst sampler
-#define BURST_LOOP_PERIOD 1000
+#define BURST_LOOP_PERIOD 5000
 
 #endif
