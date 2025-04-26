@@ -34,18 +34,24 @@ void XYStateEstimator::updateState(imu_state_t * imu_state_p, gps_state_t * gps_
     // INSERT YAW, X and Y CALCULATION HERE
     //////////////////////////////////////////////////////////////////
 
-    float DeltaLatitudeRad = (gps_state_p->lat - origin_lat) * PI / 180;
-    float DeltaLongitudeRad = (gps_state_p->lon - origin_lon) * PI / 180;
+    float DeltaLatitudeRad = (gps_state_p->lat - origin_lat) * PI / 180.0;
+    float DeltaLongitudeRad = (gps_state_p->lon - origin_lon) * PI / 180.0;
 
-    DeltaLatitudeRad = min(max(DeltaLatitudeRad, -1*PI), PI);
-    DeltaLongitudeRad = min(max(DeltaLatitudeRad, -1*PI), PI);
+    //DeltaLatitudeRad = min(max(DeltaLatitudeRad, -1*PI), PI);
+    //DeltaLongitudeRad = min(max(DeltaLatitudeRad, -1*PI), PI);
 
-    const float Heading = imu_state_p->heading;
+    // const float Heading = imu_state_p->heading;
 
     state.y = RADIUS_OF_EARTH_M * DeltaLatitudeRad;
-    state.x = RADIUS_OF_EARTH_M * DeltaLongitudeRad * cos(origin_lat);
+    state.x = RADIUS_OF_EARTH_M * DeltaLongitudeRad * cos(origin_lat*PI/180.0);
 
-    state.yaw = -1 * (Heading - PI/2) + YawOffset;
+    // get yaw
+
+    float HeadingRad = imu_state_p->heading*PI/180.0; // convert to radians
+    float YawRad = -HeadingRad + PI/2.0; // adjust from 0=North, CWW=(+) to 0=East, CCW=(+)
+    state.yaw = angleDiff(YawRad);
+
+    // state.yaw = -1 * (Heading - PI/2) + YawOffset;
   }
   else{
     gpsAcquired = 0;

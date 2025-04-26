@@ -36,7 +36,7 @@ XYStateEstimator state_estimator;
 SurfaceControl surface_control;
 SensorGPS gps;
 Adafruit_GPS GPS(&UartSerial);
-// ADCSampler adc;
+ADCSampler adc;
 ErrorFlagSampler ef;
 ButtonSampler button_sampler;
 SensorIMU imu;
@@ -52,9 +52,9 @@ int current_way_point = 0;
 volatile bool EF_States[NUM_FLAGS] = {1,1,1};
 
 // GPS Waypoints
-const int number_of_waypoints = 2;
+const int number_of_waypoints = 3;
 const int waypoint_dimensions = 2;       // waypoints are set to have two pieces of information, x then y.
-double waypoints [] = { 0, 10, 0, 0 };   // listed as x0,y0,x1,y1, ... etc.
+double waypoints [] = { 2, -11, 0, 0 };   // listed as x0,y0,x1,y1, ... etc.
 
 ////////////////////////* Setup *////////////////////////////////
 
@@ -65,7 +65,7 @@ void setup() {
   logger.include(&state_estimator);
   logger.include(&surface_control);
   logger.include(&motor_driver);
-  // logger.include(&adc);
+  logger.include(&adc);
   logger.include(&ef);
   logger.include(&button_sampler);
   logger.init();
@@ -90,7 +90,7 @@ void setup() {
   printer.lastExecutionTime         = loopStartTime - LOOP_PERIOD + PRINTER_LOOP_OFFSET ;
   imu.lastExecutionTime             = loopStartTime - LOOP_PERIOD + IMU_LOOP_OFFSET;
   gps.lastExecutionTime             = loopStartTime - LOOP_PERIOD + GPS_LOOP_OFFSET;
-  // adc.lastExecutionTime             = loopStartTime - LOOP_PERIOD + ADC_LOOP_OFFSET;
+  adc.lastExecutionTime             = loopStartTime - LOOP_PERIOD + ADC_LOOP_OFFSET;
   ef.lastExecutionTime              = loopStartTime - LOOP_PERIOD + ERROR_FLAG_LOOP_OFFSET;
   button_sampler.lastExecutionTime  = loopStartTime - LOOP_PERIOD + BUTTON_LOOP_OFFSET;
   state_estimator.lastExecutionTime = loopStartTime - LOOP_PERIOD + XY_STATE_ESTIMATOR_LOOP_OFFSET;
@@ -108,7 +108,7 @@ void loop() {
   
   if ( currentTime-printer.lastExecutionTime > LOOP_PERIOD ) {
     printer.lastExecutionTime = currentTime;
-    //printer.printValue(0,adc.printSample());
+    printer.printValue(0,adc.printSample());
     printer.printValue(1,ef.printStates());
     printer.printValue(2,logger.printState());
     printer.printValue(3,gps.printState());   
@@ -130,22 +130,35 @@ void loop() {
     
     if (currentTime-surface_control.lastExecutionTime > LOOP_PERIOD ) 
     {
-      motor_driver.drive(surface_control.uL,surface_control.uR,0);
+      motor_driver.drive(surface_control.uL,0,surface_control.uR);
     }
   }
 
+  /// SURFACE CONTROL FINITE STATE MACHINE///
   if ( currentTime-surface_control.lastExecutionTime > LOOP_PERIOD ) {
     surface_control.lastExecutionTime = currentTime;
-    surface_control.navigate(&state_estimator.state, &gps.state, DELAY);
-    motor_driver.drive(surface_control.uL,surface_control.uR,0);
+    if ( surface_control.navigateState ) { // NAVIGATE STATE //
+      if ( !surface_control.atPoint ) { 
+        surface_control.navigate(&state_estimator.state, &gps.state, currentTime);
+      }
+      else if ( surface_control.complete ) { 
+        delete[] surface_control.wayPoints; // destroy surface waypoint array from the Heap
+      }
+      else {
+        surface_control.atPoint = false;   // get ready to go to the next point
+      }
+      motor_driver.drive(surface_control.uL,0,surface_control.uR);
+    }
   }
 
-  // if ( currentTime-adc.lastExecutionTime > LOOP_PERIOD ) {
-  //   adc.lastExecutionTime = currentTime;
-  //   adc.updateSample(); 
-  // }
+  if ( currentTime-adc.lastExecutionTime > LOOP_PERIOD ) 
+  {
+     adc.lastExecutionTime = currentTime;
+     adc.updateSample(); 
+  }
 
-  if ( currentTime-ef.lastExecutionTime > LOOP_PERIOD ) {
+  if ( currentTime-ef.lastExecutionTime > LOOP_PERIOD ) 
+  {
     ef.lastExecutionTime = currentTime;
     attachInterrupt(digitalPinToInterrupt(ERROR_FLAG_A), EFA_Detected, LOW);
     attachInterrupt(digitalPinToInterrupt(ERROR_FLAG_B), EFB_Detected, LOW);
