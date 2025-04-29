@@ -1,6 +1,6 @@
 %calibration for E80 Robot
-clear
-datafile = load('datalog.csv'); %rename to the proper file
+%clear
+%datafile = load('datalog5.csv'); %rename to the proper file
 %line 1 is time
 
 %line 2 is  nan
@@ -85,8 +85,9 @@ figure;
 vmin= var3;
 vmax = var4;
 
-salinity = 2.65+0.0153.*vmax+1.64*10^-4*(vmax).^2;
-plot(time, salinity)
+salinity = -114241 + 167614*(vmax) - 91966*(vmax).^2 + 22356*(vmax).^3 - 2031*(vmax).^4;
+plot(time, vmax)
+xlim([174.449,174.5])
 title("Salinity With Respect to Time")
 xlabel('Time (Secs)')
 ylabel("Salinity (ppt)")
